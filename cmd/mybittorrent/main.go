@@ -14,6 +14,9 @@ import (
 // - 5:hello -> hello
 // - 10:hello12345 -> hello12345
 func decodeBencode(bencodedString string) (interface{}, error) {
+	if bencodedString[0] == 'i' && bencodedString[len(bencodedString)-1] == 'e' {
+		return bencodedString[1 : len(bencodedString)-1], nil
+	}
 	if unicode.IsDigit(rune(bencodedString[0])) {
 		var firstColonIndex int
 
