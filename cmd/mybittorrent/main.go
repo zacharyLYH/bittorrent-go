@@ -2,6 +2,7 @@ package main
 
 import (
 	// Uncomment this line to pass the first stage
+
 	"encoding/json"
 	"fmt"
 	"os"
@@ -11,6 +12,21 @@ import (
 
 	bencode "github.com/jackpal/bencode-go"
 )
+
+// TorrentInfo represents the "info" field in the Bencoded file
+type TorrentInfo struct {
+	Length      int    `json:"length"`
+	Name        string `json:"name"`
+	PieceLength int    `json:"piece length"`
+	Pieces      string `json:"pieces"`
+}
+
+// TorrentFile represents the entire Bencoded file
+type TorrentFile struct {
+	Announce  string      `json:"announce"`
+	CreatedBy string      `json:"created by"`
+	Info      TorrentInfo `json:"info"`
+}
 
 func decodeList(bencodedString string) ([]any, error) {
 	list, err := bencode.Decode(strings.NewReader(bencodedString))
@@ -71,13 +87,26 @@ func main() {
 		bencodedValue := os.Args[2]
 
 		decoded, err := decodeBencode(bencodedValue)
-		if err != nil {
-			fmt.Println(err)
-			return
-		}
+
+		handleErrorGeneric(err)
 
 		jsonOutput, _ := json.Marshal(decoded)
 		fmt.Println(string(jsonOutput))
+
+	} else if command == "info" {
+
+		torrentFile := os.Args[2]
+
+		fileData, err := readFileReturnBytes(torrentFile)
+
+		handleErrorGeneric(err)
+
+		decoded, err := decodeBencodeToTorrentFile(string(fileData))
+
+		handleErrorGeneric(err)
+
+		fmt.Printf("Tracker URL: %s\n", decoded.Announce)
+		fmt.Printf("Length: %d", decoded.Info.Length)
 	} else {
 		fmt.Println("Unknown command: " + command)
 		os.Exit(1)
