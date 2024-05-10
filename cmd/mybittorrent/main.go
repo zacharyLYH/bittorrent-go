@@ -17,12 +17,19 @@ func decodeList(bencodedString string) ([]any, error) {
 	return list.([]any), err
 }
 
+func decodeDict(bencodedString string) (map[string]interface{}, error) {
+	list, err := bencode.Decode(strings.NewReader(bencodedString))
+	return list.(map[string]interface{}), err
+}
+
 // Example:
 // - 5:hello -> hello
 // - 10:hello12345 -> hello12345
 func decodeBencode(bencodedString string) (interface{}, error) {
 	if bencodedString[0] == 'l' {
 		return decodeList(bencodedString)
+	} else if bencodedString[0] == 'd' {
+		return decodeDict(bencodedString)
 	} else if bencodedString[0] == 'i' && bencodedString[len(bencodedString)-1] == 'e' {
 		numberStr := bencodedString[1 : len(bencodedString)-1]
 		number, err := strconv.Atoi(numberStr)
