@@ -6,15 +6,24 @@ import (
 	"fmt"
 	"os"
 	"strconv"
+	"strings"
 	"unicode"
-	// bencode "github.com/jackpal/bencode-go" // Available if you need it!
+
+	bencode "github.com/jackpal/bencode-go"
 )
+
+func decodeList(bencodedString string) ([]any, error) {
+	list, err := bencode.Decode(strings.NewReader(bencodedString))
+	return list.([]any), err
+}
 
 // Example:
 // - 5:hello -> hello
 // - 10:hello12345 -> hello12345
 func decodeBencode(bencodedString string) (interface{}, error) {
-	if bencodedString[0] == 'i' && bencodedString[len(bencodedString)-1] == 'e' {
+	if bencodedString[0] == 'l' {
+		return decodeList(bencodedString)
+	} else if bencodedString[0] == 'i' && bencodedString[len(bencodedString)-1] == 'e' {
 		numberStr := bencodedString[1 : len(bencodedString)-1]
 		number, err := strconv.Atoi(numberStr)
 		if err != nil {
