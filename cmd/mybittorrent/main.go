@@ -15,9 +15,13 @@ import (
 // - 10:hello12345 -> hello12345
 func decodeBencode(bencodedString string) (interface{}, error) {
 	if bencodedString[0] == 'i' && bencodedString[len(bencodedString)-1] == 'e' {
-		return bencodedString[1 : len(bencodedString)-1], nil
-	}
-	if unicode.IsDigit(rune(bencodedString[0])) {
+		numberStr := bencodedString[1 : len(bencodedString)-1]
+		number, err := strconv.Atoi(numberStr)
+		if err != nil {
+			return nil, err
+		}
+		return number, nil
+	} else if unicode.IsDigit(rune(bencodedString[0])) {
 		var firstColonIndex int
 
 		for i := 0; i < len(bencodedString); i++ {
