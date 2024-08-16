@@ -143,6 +143,42 @@ func main() {
 			port := int(peerData[i+4])<<8 | int(peerData[i+5])
 			fmt.Printf("%s:%d\n", ip, port)
 		}
+	} else if command == "handshake" {
+		fileName := os.Args[2]
+		meta := bencodeUnmarshall(fileName)
+
+		infoHash := getInfoHash(meta.Info)
+
+		ipHost := os.Args[3]
+
+		conn, err := net.Dial("tcp", ipHost)
+		handleErrorGeneric(err)
+		defer conn.Close()
+
+		var buffer bytes.Buffer
+		protocolName := "BitTorrent protocol"
+
+		buffer.WriteByte(19)
+
+		buffer.WriteString(protocolName)
+
+		buffer.Write(make([]byte, 8))
+
+		buffer.Write(infoHash)
+
+		peerID := "00112233445566778899"
+		buffer.Write([]byte(peerID))
+
+		encodedMessage := buffer.Bytes()
+
+		_, err = conn.Write(encodedMessage)
+		handleErrorGeneric(err)
+
+		response := make([]byte, 68)
+		_, err = conn.Read(response)
+		handleErrorGeneric(err)
+
+		fmt.Printf("Peer ID: %x\n", response[48:])
 	} else {
 		fmt.Println("Unknown command: " + command)
 		os.Exit(1)
