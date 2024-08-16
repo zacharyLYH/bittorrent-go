@@ -3,6 +3,7 @@ package main
 import (
 	"bytes"
 	"crypto/sha1"
+	"encoding/hex"
 	"encoding/json"
 	"fmt"
 	"os"
@@ -28,6 +29,18 @@ func handleErrorGeneric(err error) {
 	if err != nil {
 		fmt.Println(err)
 		os.Exit(1)
+	}
+}
+
+func printPieceHashes(pieces []byte) {
+	const pieceSize = 20 // Each piece is 20 bytes
+	numPieces := len(pieces) / pieceSize
+	fmt.Println("Piece Hashes: ")
+	for i := 0; i < numPieces; i++ {
+		start := i * pieceSize
+		end := start + pieceSize
+		piece := pieces[start:end]
+		fmt.Printf("%s\n", hex.EncodeToString(piece))
 	}
 }
 
@@ -65,6 +78,8 @@ func main() {
 			panic(err)
 		}
 		fmt.Printf("Info Hash: %x\n", h.Sum(nil))
+		fmt.Println("Piece Length:", meta.Info.PieceLength)
+		printPieceHashes([]byte(meta.Info.Pieces))
 	} else {
 		fmt.Println("Unknown command: " + command)
 		os.Exit(1)
